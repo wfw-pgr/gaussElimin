@@ -1,5 +1,5 @@
 ! ====================================================== !
-! === gauss Elimination :: partial pivoting ver.     === !
+! === gauss Elimination :: no pivoting ver.          === !
 ! ====================================================== !
 module gaussElimMod
 contains
@@ -13,8 +13,8 @@ contains
     double precision, intent(in)  :: Amat(nSize,nSize)
     double precision, intent(in)  :: bvec(nSize)
     double precision, intent(out) :: xvec(nSize)
-    integer                       :: i, j, k, ipivot
-    double precision              :: Dinv, buff, vpivot
+    integer                       :: i, j, k
+    double precision              :: Dinv
     double precision, parameter   :: eps = 1.d-10
     double precision, allocatable :: Umat(:,:), vvec(:,:)
 
@@ -32,34 +32,15 @@ contains
     ! ----------------------------------------- !
     do k=1, nSize
 
-       !  -- [2-1] Pivoting                 --  !
-       vpivot = abs( Umat(k,k) )
-       ipivot = k
-       do j=k+1, nSize
-          if ( abs( Umat(j,k) ).gt.vpivot ) then
-             vpivot = abs( Umat(j,k) )
-             ipivot = j
-          endif
-       end do
-       if ( ipivot.ne.k ) then
-          do j=k, nSize
-             buff           = Umat(ipivot,j)
-             Umat(ipivot,j) = Umat(k     ,j)
-             Umat(k     ,j) = buff
-          enddo
-          buff         = xvec(ipivot)
-          xvec(ipivot) = xvec(k)
-          xvec(k)      = buff
-       end if
+       !  -- [2-1] Diagonal Component       --  !
        if ( abs( Umat(k,k) ).lt.eps ) then
-          write(6,*) '[gaussElimin] Amat :: Singular Matrix :: No Solution End :: @ k= ', k
+          write(6,*) '[gaussElimin] Amat != Regular Matrix :: No Solution End :: @ k= ', k
           stop
        endif
-       !  -- [2-2] Diagonal Component       --  !
        Dinv      = 1.d0 / Umat(k,k)
        Umat(k,k) = 1.d0
 
-       !  -- [2-3] Non-Diagonal Component   --  !
+       !  -- [2-2] Non-Diagonal Component   --  !
        if ( k.eq.nSize ) then
           ! -- [    Last Row :: k == nSize ] -- !
           xvec(k) = Dinv * xvec(k)
